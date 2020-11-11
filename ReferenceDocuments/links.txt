@@ -1,0 +1,4 @@
+https://github.com/aguegu/ardulibs/tree/master/hx711 
+https://www.amazon.ca/gp/product/B07B4DNJ2L/ref=ox_sc_act_title_1?smid=A2RJ79XBQX6W3M&psc=1
+https://cdn-shop.adafruit.com/datasheets/MAX4465-MAX4469.pdf
+https://www.sparkfun.com/products/10245

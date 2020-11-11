@@ -86,7 +86,8 @@ int main(void)
   ADC10CTL1 |= ADC10SHP;                    // ADCCLK = MODOSC; sampling timer
   ADC10CTL2 |= ADC10RES;                    // 10-bit conversion results
   ADC10IE |= ADC10IE0;                      // Enable ADC conv complete interrupt
-  ADC10MCTL0 |= ADC10INCH_1 + ADC10SREF_1;  // A0 ADC input select; Vref=1.5V
+  ADC10MCTL0 |= ADC10INCH_1 + ADC10SREF_1;  // A0 ADC input select; Vref=1.5V with VeRef-
+  P1SELC |=BIT0;
 
   // Configure TA0 to provide delay for reference settling ~75us
   TA0CCR0 = 80;                              // Delay to allow Ref to settle

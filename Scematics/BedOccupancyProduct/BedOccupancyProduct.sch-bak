@@ -1,0 +1,98 @@
+EESchema Schematic File Version 4
+EELAYER 30 0
+EELAYER END
+$Descr A4 11693 8268
+encoding utf-8
+Sheet 1 1
+Title ""
+Date ""
+Rev ""
+Comp ""
+Comment1 ""
+Comment2 ""
+Comment3 ""
+Comment4 ""
+$EndDescr
+$Comp
+L alarmclocksystem:HX711LoadCellBoard U?
+U 1 1 5FA04B25
+P 3300 2200
+F 0 "U?" H 3300 2350 50  0001 C CNN
+F 1 "HX711LoadCellBoard" H 3300 2173 50  0000 C CNN
+F 2 "" H 3300 2350 50  0001 C CNN
+F 3 "" H 3300 2350 50  0001 C CNN
+	1    3300 2200
+	1    0    0    -1  
+$EndComp
+$Comp
+L alarmclocksystem:LoadCell U?
+U 1 1 5FA05267
+P 3000 900
+F 0 "U?" H 3178 451 50  0000 L CNN
+F 1 "LoadCell" H 3178 360 50  0000 L CNN
+F 2 "" H 3000 900 50  0001 C CNN
+F 3 "" H 3000 900 50  0001 C CNN
+	1    3000 900 
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	1800 1100 2150 1100
+Wire Wire Line
+	2150 1100 2150 1700
+Wire Wire Line
+	2150 1700 2550 1700
+Wire Wire Line
+	2550 1100 2300 1100
+Wire Wire Line
+	2300 1100 2300 1550
+Wire Wire Line
+	2300 1550 2000 1550
+Wire Wire Line
+	2000 1550 2000 1700
+Wire Wire Line
+	2000 1700 1800 1700
+Connection ~ 2000 1700
+Connection ~ 2150 1700
+Wire Wire Line
+	2550 1400 2450 1400
+$Comp
+L alarmclocksystem:LoadCell U?
+U 1 1 5FA06464
+P 1350 900
+F 0 "U?" H 1192 925 50  0000 C CNN
+F 1 "LoadCell" H 1192 834 50  0000 C CNN
+F 2 "" H 1350 900 50  0001 C CNN
+F 3 "" H 1350 900 50  0001 C CNN
+	1    1350 900 
+	-1   0    0    -1  
+$EndComp
+Wire Wire Line
+	1800 1400 1850 1400
+Wire Wire Line
+	2750 2400 2150 2400
+Wire Wire Line
+	2150 1700 2150 2400
+Wire Wire Line
+	2750 2500 2000 2500
+Wire Wire Line
+	2000 1700 2000 2500
+Wire Wire Line
+	2750 2600 2450 2600
+Wire Wire Line
+	2450 1400 2450 2600
+Wire Wire Line
+	2750 2700 1850 2700
+Wire Wire Line
+	1850 1400 1850 2700
+$Comp
+L alarmclocksystem:MSP430-Alarmclock U?
+U 1 1 5FA0B0E4
+P 6700 2100
+F 0 "U?" H 6758 2065 50  0000 C CNN
+F 1 "MSP430-Alarmclock" H 6758 1974 50  0000 C CNN
+F 2 "" H 6700 2100 50  0001 C CNN
+F 3 "" H 6700 2100 50  0001 C CNN
+	1    6700 2100
+	1    0    0    -1  
+$EndComp
+$EndSCHEMATC
