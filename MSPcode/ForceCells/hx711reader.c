@@ -7,19 +7,10 @@
 //FUNCTIONS
 void ReadForce();
 void setupHX711();
-void addBuffer1(char recieved);
-long int removeBuffer1(void);
 void ReadAverageForce(void);
 void sendForceToSerial(void);
 //VARIABLES
 volatile unsigned long long int LoadCellVal;
-
-#define length1 50
-volatile long int buffer1[length1];
-volatile unsigned char start1 = 0;
-volatile unsigned char end1 = 0;
-volatile bool writefull1 = false;
-volatile bool readempty1 = true;
 
 //GLOBALS
 
@@ -32,7 +23,8 @@ int main(void)
 	setupHX711();
 	while(1){
 	    ReadAverageForce();
-	    __delay_cycles(10000);
+	    sendForceToSerial();
+	    LoadCellVal = 0;
 	}
 
 	return 0;
@@ -44,12 +36,40 @@ void setupHX711(){
     P1OUT &= ~BIT1;
     P4OUT |= BIT0; //pull up
     P1REN |= BIT0; //enable pull up
+
+
+    //CONFIGURE CLOCKS
+    //*********************
+    CSCTL0_H = CSKEY_H;       // Clock password resister to allow writing
+
+    // Set DCO to 8MHz
+    CSCTL1 = 0;               // Clear DCO settings
+    CSCTL1 &= ~DCORSEL;       // DCOR Mode Select 0
+    CSCTL1 |= DCOFSEL_3;      // DCO selection frequency
+
+    CSCTL2 = SELM_3 + SELA_3 + SELS_3;      // All clocks get source of DCO,!(32768hz)
+    CSCTL3 = DIVS__32 + DIVA__1 + DIVM__32;    // set dividers to 1 or 32
+    CSCTL0_H &= ~CSKEY_H;                   //lock the clock
+
+    //CONFIGURE UART
+    //**************
+    //configure P2.0 ad P2.1 as the Rx and Tx for UART
+    P2SEL1 |= BIT0 | BIT1;
+    P2SEL0 &= ~(BIT0 | BIT1);
+
+    UCA0CTLW0 = UCSWRST;    //Reset the eUSCI
+    UCA0CTLW0 = UCSSEL0;    //set clock source ACLK
+
+    // Configure the baud rate from the 8MHz of DCO to 9600
+    UCA0BRW = 52;
+    UCA0MCTLW |= 0x4900 + UCOS16 + UCBRF0;
+
 }
 
 
 void ReadAverageForce(){
     unsigned char count = 0;
-    unsigned char numtoAve = 25;
+    unsigned char numtoAve = 5;
     LoadCellVal = 0;
     for(count = numtoAve; count>0;count--){
         ReadForce();
@@ -76,83 +96,25 @@ void ReadForce(){
     }
 
     P1OUT |= BIT1;
-    //ReadVal = ReadVal ^ 0x800000;
+    ReadVal = ReadVal ^ 0x800000;
     P1OUT &= ~BIT1;
 
     LoadCellVal += ReadVal;
 }
 
-
-void addBuffer1(char recieved)
-{
-    if(writefull1 == false){
-
-       if(start1 == end1)
-           readempty1 = false;
-
-        if (end1<length1){
-            buffer1[end1] = recieved;
-            end1++;
-        }else { // at the end of the array
-            end1=0;
-            buffer1[end1] = recieved;
-            end1++;
-        }
-
-        if(end1 == start1)
-            writefull1 = true;
-    }else{//when full send error message
-        UCA0TXBUF = 255;
-        while ((UCA0IFG & UCTXIFG)==0);
-        UCA0TXBUF = 0;
-        while ((UCA0IFG & UCTXIFG)==0);
-    }
-
-}
-
-
-long int removeBuffer1(void){
-    long int removed;
-
-    if(readempty1 == false)
-    {
-        if(start1==end1)
-            writefull1 = false;
-
-        if (start1<length1){
-            removed = buffer1[start1];
-            start1++;
-        }else { // at the end of the array
-            start1=0;
-            removed = buffer1[start1];
-            start1++;
-        }
-
-        if(start1 == end1)
-            readempty1= true;
-    }else {// when empty
-        UCA0TXBUF = 255;
-        while ((UCA0IFG & UCTXIFG)==0);
-        UCA0TXBUF = 0;
-        while ((UCA0IFG & UCTXIFG)==0);
-        removed = 255;
-    }
-
-    return removed;
-}
-
 void sendForceToSerial(){
+    unsigned long sending = LoadCellVal;
     char data;
-    data = 255;
+    data = 125;
     UCA0TXBUF = data;
     while ((UCA0IFG & UCTXIFG)==0);
-    data = LoadCellVal >>16;
+    data = sending >>16;
     UCA0TXBUF = data;
     while ((UCA0IFG & UCTXIFG)==0);
-    data = LoadCellVal >>8;
+    data = sending >>8;
     UCA0TXBUF = data;
     while ((UCA0IFG & UCTXIFG)==0);
-    data = LoadCellVal;
+    data = sending;
     UCA0TXBUF = data;
     while ((UCA0IFG & UCTXIFG)==0);
 }
