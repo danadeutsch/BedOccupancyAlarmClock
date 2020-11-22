@@ -36,46 +36,24 @@ F 3 "" H 3000 900 50  0001 C CNN
 	1    0    0    -1  
 $EndComp
 Wire Wire Line
-	1800 1100 2150 1100
-Wire Wire Line
-	2150 1100 2150 1700
-Wire Wire Line
-	2150 1700 2550 1700
-Wire Wire Line
-	2550 1100 2300 1100
-Wire Wire Line
-	2300 1100 2300 1550
-Wire Wire Line
-	2300 1550 2000 1550
-Wire Wire Line
-	2000 1550 2000 1700
-Wire Wire Line
-	2000 1700 1800 1700
-Connection ~ 2000 1700
-Connection ~ 2150 1700
-Wire Wire Line
 	2550 1400 2450 1400
 $Comp
 L alarmclocksystem:LoadCell U?
 U 1 1 5FA06464
-P 1350 900
-F 0 "U?" H 1192 925 50  0001 C CNN
-F 1 "LoadCell" H 1192 834 50  0000 C CNN
-F 2 "" H 1350 900 50  0001 C CNN
-F 3 "" H 1350 900 50  0001 C CNN
-	1    1350 900 
-	-1   0    0    -1  
+P 1350 1900
+F 0 "U?" H 1192 1925 50  0001 C CNN
+F 1 "LoadCell" H 1192 1834 50  0000 C CNN
+F 2 "" H 1350 1900 50  0001 C CNN
+F 3 "" H 1350 1900 50  0001 C CNN
+	1    1350 1900
+	-1   0    0    1   
 $EndComp
 Wire Wire Line
 	1800 1400 1850 1400
 Wire Wire Line
 	2750 2400 2150 2400
 Wire Wire Line
-	2150 1700 2150 2400
-Wire Wire Line
 	2750 2500 2000 2500
-Wire Wire Line
-	2000 1700 2000 2500
 Wire Wire Line
 	2750 2600 2450 2600
 Wire Wire Line
@@ -236,4 +214,18 @@ Wire Wire Line
 	7200 2800 7200 3050
 Wire Wire Line
 	6000 3050 7200 3050
+Wire Wire Line
+	1800 1100 2150 1100
+Wire Wire Line
+	1800 1700 2000 1700
+Wire Wire Line
+	2150 2400 2150 1100
+Connection ~ 2150 1100
+Wire Wire Line
+	2150 1100 2550 1100
+Wire Wire Line
+	2000 2500 2000 1700
+Connection ~ 2000 1700
+Wire Wire Line
+	2000 1700 2550 1700
 $EndSCHEMATC

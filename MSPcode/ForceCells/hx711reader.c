@@ -8,11 +8,12 @@
 void ReadForce();
 void setupHX711();
 void addBuffer1(char recieved);
-char removeBuffer1(void);
+long int removeBuffer1(void);
 void ReadAverageForce(void);
 void sendForceToSerial(void);
 //VARIABLES
-volatile long int LoadCellVal;
+volatile unsigned long long int LoadCellVal;
+
 #define length1 50
 volatile long int buffer1[length1];
 volatile unsigned char start1 = 0;
@@ -49,14 +50,9 @@ void setupHX711(){
 void ReadAverageForce(){
     unsigned char count = 0;
     unsigned char numtoAve = 25;
-
+    LoadCellVal = 0;
     for(count = numtoAve; count>0;count--){
         ReadForce();
-    }
-
-    while(count<numtoAve){
-        LoadCellVal = removeBuffer1();
-        count++;
     }
 
     LoadCellVal = LoadCellVal/numtoAve;
@@ -80,10 +76,10 @@ void ReadForce(){
     }
 
     P1OUT |= BIT1;
-    ReadVal = ReadVal ^ 0x800000;
+    //ReadVal = ReadVal ^ 0x800000;
     P1OUT &= ~BIT1;
 
-    addBuffer1(ReadVal);
+    LoadCellVal += ReadVal;
 }
 
 
@@ -115,8 +111,8 @@ void addBuffer1(char recieved)
 }
 
 
-char removeBuffer1(void){
-    char removed;
+long int removeBuffer1(void){
+    long int removed;
 
     if(readempty1 == false)
     {
