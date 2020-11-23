@@ -32,8 +32,11 @@ volatile char counterForOutCheck = 0;
 #define SNOOZETIME 18  //in seconds
 #define CHECKTIME 30   //in seconds
 #define OUTOFBEDPASS 12 //in check time intervals
+#define TONE1 120
+#define TONE2 50
 
-#define BEDLIMIT 2000000
+volatile int tone = TONE1;
+#define BEDLIMIT 8000000
 volatile unsigned long long int LoadCellVal;
 
 /**
@@ -76,6 +79,7 @@ int main(void)
 
 //STATE 0
 void checkForSoundState(){
+    P1OUT &= ~BIT3; // ending the cycle light
     TB1CCTL1 &= ~CCIE;      //disable TB ISR
     P4IE &= ~BIT0;          //disable snooze interrupt
     P1IE |= BIT4;          //enable noise sensor interrupt
@@ -88,6 +92,7 @@ void checkForSoundState(){
 // ISR for polling the noise of the phone alarm
 #pragma vector=PORT1_VECTOR
 __interrupt void port_1(void){
+        P1OUT &= ~BIT3; // starting the cycle light
         state = 1;
         P1IFG &= ~BIT4;
         P1IE &= ~BIT4; // clear this ISR flag
@@ -132,20 +137,31 @@ __interrupt void port_4(void){
 #pragma vector = TIMER1_B1_VECTOR
 __interrupt void TimerB1_snooze(void){
 
+    if(state==5){
+        switch(tone){
+        case TONE1:
+            tone = TONE2;
+            break;
+        case TONE2:
+            tone = TONE1;
+            break;
+        }
+
+        TB0CCR0 =tone;
+        TB0CCR2 = tone/2;
+    }
     if(timercounter == waitingTime){// when counting time is up
         if(state == 6){ // out of bed check
-            TB1CCTL1 &= ~CCIE;          // disable TB counter
+            //TB1CCTL1 &= ~CCIE;          // disable TB counter
             counterForOutCheck++;
             state = 4;
         }else if(state == 2){ //in bed check
-            P4IE |= BIT0;               //enable snooze interrupt
-            TB1CCTL1 &= ~CCIE;          // disable TB counter
-
             ReadForce();
             if(LoadCellVal > BEDLIMIT){ // bed high aka occupied
                 BUZZERPORT |= BUZZERPIN;    // buzzer light on
                 P1DIR |= BIT5;              // buzzer on
                 state = 5;
+                P4IE |= BIT0;               //enable snooze interrupt
             }else {
                 counterForOutCheck =0;
                 state = 3;
@@ -309,10 +325,14 @@ void generalAlarmsSetup(void){
 
     // f = 8000000/32/8 = 31,250
     // f = 31250/310 = 100hz
-    TB0CCR0 =310;
-    TB0CCR2 = 155;
+    TB0CCR0 =tone;
+    TB0CCR2 = tone/2;
     TB0CCTL2 |= OUTMOD_3;   // output on set reset
     TB1CCTL2 &= ~CCIE;       //dis-enable interrupt OG
     P1DIR &= ~BIT5;
     P1SEL0  |= BIT5;
+
+    P1DIR |= BIT3;
+    P1OUT &= ~BIT3;
+
 }

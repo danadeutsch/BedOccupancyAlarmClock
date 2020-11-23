@@ -19,7 +19,10 @@ namespace ReadHX711
         double time = 0;
         bool connected = false;
         int numberInReadBuffer = 0;
-
+        int inbedvalue = 8050000;
+        DateTime TimeInBed;
+        bool inBed = false;
+        TimeSpan Time;
         public Form1()
         {
             InitializeComponent();
@@ -128,6 +131,21 @@ namespace ReadHX711
 
                 chart1.Series["hx711"].Points.AddY(data);
                 textBox1.Text = data.ToString("0");
+
+                if (data > inbedvalue && inBed == false)
+                {
+                    TimeInBed = DateTime.Now;
+                    inBed = true;
+                }else if (inBed == true && data<inbedvalue){
+                    inBed = false;
+                    
+
+                }
+                else if (inBed == true && data > inbedvalue)
+                {
+                    Time = DateTime.Now - TimeInBed;
+                    textBox2.Text = Time.ToString("hh\\:mm\\:ss");
+                }
             }
         }
 
@@ -175,11 +193,9 @@ namespace ReadHX711
             
         }
 
+        private void label1_Click(object sender, EventArgs e)
+        {
 
-
-
-
-
-
+        }
     }
 }
