@@ -36,7 +36,7 @@ volatile char counterForOutCheck = 0;
 #define TONE2 50
 
 volatile int tone = TONE1;
-#define BEDLIMIT 8000000
+#define BEDLIMIT 8800000
 volatile unsigned long long int LoadCellVal;
 
 /**
@@ -187,13 +187,14 @@ void outOfBedState(void){
 void bedCheck2(void){
     if(counterForOutCheck == OUTOFBEDPASS){
         state = 0;
+
     }else{
         ReadForce();
         if(LoadCellVal > BEDLIMIT){ // bed occupied
             P4IE |= BIT0;               //enable snooze interrupt
             BUZZERPORT |= BUZZERPIN;    // buzzer on
             P1DIR |= BIT5;
-            TB1CCTL1 &= ~CCIE;          // disable TB counter
+            counterForOutCheck = 0;
             state =5;
         }else{
             TB1CTL |= TBCLR;            // clear TB clock
@@ -202,17 +203,6 @@ void bedCheck2(void){
             state = 6;
         }
     }
-}
-
-void ReadAverageForce(){
-    unsigned char count = 0;
-    unsigned char numtoAve = 25;
-    LoadCellVal = 0;
-    for(count = numtoAve; count>0;count--){
-        ReadForce();
-    }
-
-    LoadCellVal = LoadCellVal/numtoAve;
 }
 
 
@@ -236,7 +226,7 @@ void ReadForce(){
     ReadVal = ReadVal ^ 0x800000;
     P1OUT &= ~BIT1;
 
-    LoadCellVal += ReadVal;
+    LoadCellVal = ReadVal;
 }
 
 void setupHX711(){

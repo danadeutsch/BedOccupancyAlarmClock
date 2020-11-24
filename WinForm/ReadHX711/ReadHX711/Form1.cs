@@ -19,10 +19,14 @@ namespace ReadHX711
         double time = 0;
         bool connected = false;
         int numberInReadBuffer = 0;
-        int inbedvalue = 8050000;
+        int inbedvalue = 8850000;
         DateTime TimeInBed;
         bool inBed = false;
         TimeSpan Time;
+        DateTime startTime = DateTime.Now;
+        
+        int state = 0;
+        int data = 0;
         public Form1()
         {
             InitializeComponent();
@@ -63,7 +67,9 @@ namespace ReadHX711
                         
                         chart1.Series["hx711"].Points.Clear();
                         timer1.Enabled = true;
+                        startTime = DateTime.Now;
                         time = 0;
+                        TimeInBed = DateTime.Now;
                     }
                     catch (Exception ex)
                     {
@@ -118,34 +124,66 @@ namespace ReadHX711
         private void timer1_Tick(object sender, EventArgs e)
         {
             int newpoint;
-            int data;
-            while (dataQueue.Count > 4)
+            
+            textBox3.Text = numberInReadBuffer.ToString("0");
+            textBox4.Text = (DateTime.Now-startTime).ToString("hh\\:mm\\:ss");
+            while (dataQueue.Count > 0)
             {
-                dataQueue.TryDequeue(out newpoint);
-                dataQueue.TryDequeue(out newpoint);
-                data = newpoint << 16;
-                dataQueue.TryDequeue(out newpoint);
-                data = data + (newpoint << 8);
-                dataQueue.TryDequeue(out newpoint);
-                data = data + (newpoint);
-
-                chart1.Series["hx711"].Points.AddY(data);
-                textBox1.Text = data.ToString("0");
-
-                if (data > inbedvalue && inBed == false)
+                switch (state)
                 {
-                    TimeInBed = DateTime.Now;
-                    inBed = true;
-                }else if (inBed == true && data<inbedvalue){
-                    inBed = false;
-                    
+                    case 0:
+                        dataQueue.TryDequeue(out newpoint);
+                        if(newpoint == 125)
+                            state = 1;
+                        break;
+                    case 1:
+                        dataQueue.TryDequeue(out newpoint);
+                        data = newpoint << 16;
+                        state = 2;
+                        break;
+                    case 2:
+                        dataQueue.TryDequeue(out newpoint);
+                        data = data + (newpoint << 8);
+                        state = 3;
+                        break;
+                    case 3:
+                        dataQueue.TryDequeue(out newpoint);
+                        data = data + (newpoint);
 
+                        chart1.Series["hx711"].Points.AddY(data);
+                        textBox1.Text = data.ToString("0");
+
+                        /*
+                        if (data < 8300000 && connection == 0)
+                        {
+                            label3.Text = Time.ToString("hh\\:mm\\:ss");
+                            connection = 1;
+
+                        }*/
+
+                        if (data > inbedvalue && inBed == false)
+                        {
+                            TimeInBed = DateTime.Now;
+                            inBed = true;
+                        }
+                        else if (inBed == true && data < inbedvalue)
+                        {
+                            inBed = false;
+
+
+                        }
+                        else if (inBed == true && data > inbedvalue)
+                        {
+                            Time = DateTime.Now - TimeInBed;
+                            textBox2.Text = Time.ToString("hh\\:mm\\:ss");
+                        }
+                        state = 0;
+                        break;
+                    default:
+                        
+                        break;
                 }
-                else if (inBed == true && data > inbedvalue)
-                {
-                    Time = DateTime.Now - TimeInBed;
-                    textBox2.Text = Time.ToString("hh\\:mm\\:ss");
-                }
+                
             }
         }
 
