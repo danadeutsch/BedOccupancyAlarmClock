@@ -20,11 +20,14 @@ namespace ReadHX711
         bool connected = false;
         int numberInReadBuffer = 0;
         int inbedvalue = 8850000;
-        DateTime TimeInBed;
+        DateTime EnteredBed;
         bool inBed = false;
         TimeSpan Time;
-        DateTime startTime = DateTime.Now;
-        
+        DateTime startConnection = DateTime.Now;
+        DateTime cyclestart;
+        DateTime cycleEnd;
+        DateTime leftTheBed;
+        DateTime alarmrang;
         int state = 0;
         int data = 0;
         public Form1()
@@ -67,9 +70,9 @@ namespace ReadHX711
                         
                         chart1.Series["hx711"].Points.Clear();
                         timer1.Enabled = true;
-                        startTime = DateTime.Now;
+                        startConnection = DateTime.Now;
                         time = 0;
-                        TimeInBed = DateTime.Now;
+                        
                     }
                     catch (Exception ex)
                     {
@@ -126,14 +129,14 @@ namespace ReadHX711
             int newpoint;
             
             textBox3.Text = numberInReadBuffer.ToString("0");
-            textBox4.Text = (DateTime.Now-startTime).ToString("hh\\:mm\\:ss");
+            textBox4.Text = (DateTime.Now-startConnection).ToString("hh\\:mm\\:ss");
             while (dataQueue.Count > 0)
             {
                 switch (state)
                 {
                     case 0:
                         dataQueue.TryDequeue(out newpoint);
-                        if(newpoint == 125)
+                        if (newpoint == 125)
                             state = 1;
                         break;
                     case 1:
@@ -161,22 +164,38 @@ namespace ReadHX711
 
                         }*/
 
-                        if (data > inbedvalue && inBed == false)
+                        if (data > inbedvalue && inBed == false) // entered the bed
                         {
-                            TimeInBed = DateTime.Now;
+                            EnteredBed = DateTime.Now;
                             inBed = true;
                         }
-                        else if (inBed == true && data < inbedvalue)
+                        else if (inBed == true && data < inbedvalue) // left the bed
                         {
                             inBed = false;
+                            leftTheBed = DateTime.Now;
 
 
                         }
-                        else if (inBed == true && data > inbedvalue)
+                        else if (inBed == true && data > inbedvalue) // while in bed
                         {
-                            Time = DateTime.Now - TimeInBed;
-                            textBox2.Text = Time.ToString("hh\\:mm\\:ss");
+
+                            textBox2.Text = (DateTime.Now - EnteredBed).ToString("hh\\:mm\\:ss");
                         }
+                        state = 4;
+                        break;
+                    case 4:
+
+                        dataQueue.TryDequeue(out newpoint);
+
+                        if (newpoint == 1){ // alarm sounded
+                            alarmrang = DateTime.Now;
+                            txtTimeSlep.Text = (EnteredBed - DateTime.Now).ToString("hh\\:mm\\:ss");
+                        }else if (newpoint == 2)
+                        {// left bed by msp
+                            cycleEnd = DateTime.Now;
+                            txtWakingTime.Text = (cycleEnd - alarmrang).ToString("hh\\:mm\\:ss");
+                        }
+
                         state = 0;
                         break;
                     default:

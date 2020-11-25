@@ -12,7 +12,7 @@ void bedCheck2(void);
 void ReadForce();
 void setupHX711();
 void ReadAverageForce(void);
-
+void sendForceToSerial(unsigned char command);
 
 //VARIABLES
 volatile bool bedOccupied = false;
@@ -80,7 +80,7 @@ int main(void)
 //STATE 0
 void checkForSoundState(){
     P1OUT &= ~BIT3; // ending the cycle light
-    TB1CCTL1 &= ~CCIE;      //disable TB ISR
+    //TB1CCTL1 &= ~CCIE;      //disable TB ISR
     P4IE &= ~BIT0;          //disable snooze interrupt
     P1IE |= BIT4;          //enable noise sensor interrupt
     state = 7;
@@ -95,6 +95,7 @@ __interrupt void port_1(void){
         P1OUT &= ~BIT3; // starting the cycle light
         state = 1;
         P1IFG &= ~BIT4;
+        sendForceToSerial(1);
         P1IE &= ~BIT4; // clear this ISR flag
 
 }
@@ -105,7 +106,7 @@ void bedCheck1(void){
     if(LoadCellVal > BEDLIMIT){ // bed high aka occupied
         state =2;
         TB1CTL |= TBCLR;            // clear TB clock
-        TB1CCTL1 |= CCIE;           // enable TB counter
+        //TB1CCTL1 |= CCIE;           // enable TB counter
         waitingTime = SNOOZETIME;   //set the timer to count up to the snooze time
         timercounter =0;
     }else{
@@ -127,7 +128,7 @@ __interrupt void port_4(void){
     state = 2;
     timercounter =0;
     TB1CTL |= TBCLR;            // clear TB clock
-    TB1CCTL1 |= CCIE;           // enable TB counter
+    //TB1CCTL1 |= CCIE;           // enable TB counter
     waitingTime = SNOOZETIME;
 }
 
@@ -152,7 +153,6 @@ __interrupt void TimerB1_snooze(void){
     }
     if(timercounter == waitingTime){// when counting time is up
         if(state == 6){ // out of bed check
-            //TB1CCTL1 &= ~CCIE;          // disable TB counter
             counterForOutCheck++;
             state = 4;
         }else if(state == 2){ //in bed check
@@ -169,7 +169,7 @@ __interrupt void TimerB1_snooze(void){
         }
     }
 
-
+    sendForceToSerial(0);
     timercounter++;
     TB1CCTL1 &= ~CCIFG; //Clear TB flag
 }
@@ -178,9 +178,10 @@ __interrupt void TimerB1_snooze(void){
 void outOfBedState(void){
     waitingTime = CHECKTIME;  //set the timer to check
     TB1CTL |= TBCLR;            // clear TB clock
-    TB1CCTL1 |= CCIE;           // enable TB counter
+    //TB1CCTL1 |= CCIE;           // enable TB counter
     timercounter = 0;
     state = 6;
+    sendForceToSerial(2);
 }
 
 //STATE 4
@@ -198,7 +199,7 @@ void bedCheck2(void){
             state =5;
         }else{
             TB1CTL |= TBCLR;            // clear TB clock
-            TB1CCTL1 |= CCIE;           // enable TB counter
+            //TB1CCTL1 |= CCIE;           // enable TB counter
             timercounter = 0;
             state = 6;
         }
@@ -238,6 +239,24 @@ void setupHX711(){
 
 }
 
+void sendForceToSerial(unsigned char command){
+    unsigned long sending = LoadCellVal;
+    char data;
+    data = 255;
+    UCA0TXBUF = data;
+    while ((UCA0IFG & UCTXIFG)==0);
+    data = sending >>16;
+    UCA0TXBUF = data;
+    while ((UCA0IFG & UCTXIFG)==0);
+    data = sending >>8;
+    UCA0TXBUF = data;
+    while ((UCA0IFG & UCTXIFG)==0);
+    data = sending;
+    UCA0TXBUF = data;
+    while ((UCA0IFG & UCTXIFG)==0);
+    UCA0TXBUF = command;
+    while ((UCA0IFG & UCTXIFG)==0);
+}
 
 void generalAlarmsSetup(void){
     //CONFIGURE CLOCKS
@@ -303,7 +322,7 @@ void generalAlarmsSetup(void){
     TB1CCR0 =3906;
     TB1CCR1 = 1953;
     TB1CCTL1 |= OUTMOD_3;   // output on set reset
-    TB1CCTL1 &= ~CCIE;       //dis-enable interrupt OG
+    TB1CCTL1 |= CCIE;       //dis-enable interrupt OG
     P3DIR |= BIT4;
     P3SEL0  |= BIT4;
 
@@ -324,5 +343,7 @@ void generalAlarmsSetup(void){
 
     P1DIR |= BIT3;
     P1OUT &= ~BIT3;
+
+
 
 }
