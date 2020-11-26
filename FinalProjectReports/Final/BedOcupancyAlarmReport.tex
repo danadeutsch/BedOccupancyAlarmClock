@@ -64,14 +64,14 @@ My objective of my system is to eliminate the possibility of remaining in bed by
 The reason for the snooze is because people enjoy laying in bed for a few minutes before fully waking up and a consistent alarm while in bed will get annoying. 
 Since most people don't use a physical alarm clock and instead use their phones, this system will work best if it were to interface with the phone people already use.\\
 
-Creating a phone application interface is outside the scope of this project as it adds a lot much functions and complexity for the short timeline provided. 
+Creating a phone application interface is outside the scope of this project as it adds a lot  complexity for the short timeline provided. 
 Instead the goal of the project is to use the phone alarm sound as a trigger point for an bed detecting alarm system which operates separate from the phone,
 This way the main alarm can be set on the phone which users already have set up since it has a better interface and more alarm features.
-However , the device run on the a microcontroller still operates in respect to the phone. 
+However, the device run on the a microcontroller still operates in respect to the phone. 
 The device will sense when the phone alarm goes off in order to begin its functions instead of having its own internal real time clock and alarm setting capacity.  
 After the original alarm, the device will periodically ring after the user "snoozes" until the user leaves the bed and doesn't return to bed for a set amount of time. 
-The device will look like a small box that is placed by the bed right where the user normally places their phone to charge.
-The device will have small wires leading to sensors under the bed to connect to the detection circuitry.
+The device will have wires leading to sensors under the bed to connect to the detection circuitry.
+
 
 \section{Rationale}
 I want to make this device since it solves a problem I face daily along with many other people.
@@ -80,14 +80,28 @@ I sometimes ignore my alarms and just decide to keep sleeping so this way I will
 This product isn't available on the market right so its only achievable by making it myself.
 I hope this project will provide a concept functionality prototype for a possible market device that uses this method or a better phone app interface. 
 As well many home automation can be made using the bed occupancy detection function like starting the coffee maker when you leave the bed.
-An example of how I imagine a final product to look like is found in Figure \ref{fig:market}.
+In reality this produce can be created as a fully functional phone application with a Bluetooth connection to the load sensor which would allow for way more features.
+I will try to simulate this connection with serial to just show how sensing bed values can provide useful data. 
 
-\begin{figure}[H]
-	\centering
-	%\includegraphics[width = 0.5\linewidth]{marketSolution}
-	\caption{Concept Drawing For a Alternative Version of the Device Integrated in a Phone Charging Station}
-	\label{fig:market}
-\end{figure}
+\section{Circuity and Setup}
+The MSP430 controlled system includes four inputs and outputs.
+The inputs include the load cells, the microphone sensor, and the push button.
+While the output is the buzzer. 
+In order to use load cells, we must connect them in a wheatstone bridge circuit. 
+In the circuit we sense the voltage across the center of the bridge with a provided input voltage. 
+The bridge voltage changes as the resistors in the bridge change. 
+These resistors are strain gauges normally where one, two or all the 4 resistors are gauges.
+In my specific senario, the load cells I got are actually each a half bridge. 
+As seen in \textbf{Figure}, the cell each have a strain gauge on the side that experiences tension when the metal part is loaded. 
+The cell is one piece of metal with a 'flex' center so we load the metal on the flexing center while mounting only the outer ring of the metal and keeping the part above ground to allow for room to flex.
+The voltage I measured across an empty bridge is around 3mV and this value rises so In reality this produce can be created as a fully functional phone application with a Bluetooth connection to the load sensor which would allow for way more features. \textbf{slightly} when loaded. 
+Since this values are so small we need an amplifier in order to use an ADC to convert the analog signal to value we can use. 
+I am using the HX711 IC on a breakout board that is meant for load cells and is an amplifier with a 24bit ADC. 
+The data is read from the chip using a clock pulse signal and a digital output in a method known as bit banging.  
+The chip has three setting for different gains selectable using the number of clock pulses in each read. 
+I am using 25 pulse version which has the largest gain (x128) which allows for the smallest range of voltage detection (0-20mV) which is more than enough for my use case.
+ 
+
 
 \begin{figure}[H]
 	\centering
