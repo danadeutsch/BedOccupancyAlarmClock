@@ -174,10 +174,6 @@ Connection ~ 6300 4200
 Wire Wire Line
 	6300 4200 6850 4200
 Wire Wire Line
-	6550 6900 6550 8450
-Wire Wire Line
-	6650 6750 6650 8650
-Wire Wire Line
 	8150 5050 9300 5050
 $Comp
 L alarmclocksystem:MicBoard U?
