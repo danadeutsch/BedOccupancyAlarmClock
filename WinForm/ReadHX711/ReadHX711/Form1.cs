@@ -19,7 +19,7 @@ namespace ReadHX711
         double time = 0;
         bool connected = false;
         int numberInReadBuffer = 0;
-        int inbedvalue = 8850000;
+        int inbedvalue = 9400000;
         DateTime EnteredBed;
         bool inBed = false;
         TimeSpan Time;
@@ -30,6 +30,8 @@ namespace ReadHX711
         DateTime alarmrang;
         int state = 0;
         int data = 0;
+        bool inACycle = false;
+
         public Form1()
         {
             InitializeComponent();
@@ -136,7 +138,7 @@ namespace ReadHX711
                 {
                     case 0:
                         dataQueue.TryDequeue(out newpoint);
-                        if (newpoint == 125)
+                        if (newpoint == 255)
                             state = 1;
                         break;
                     case 1:
@@ -168,11 +170,15 @@ namespace ReadHX711
                         {
                             EnteredBed = DateTime.Now;
                             inBed = true;
+
                         }
                         else if (inBed == true && data < inbedvalue) // left the bed
                         {
                             inBed = false;
                             leftTheBed = DateTime.Now;
+                            if (inACycle) {
+                                txtWakingTime.Text = (leftTheBed - alarmrang).ToString("hh\\:mm\\:ss");
+                            }
 
 
                         }
@@ -187,13 +193,21 @@ namespace ReadHX711
 
                         dataQueue.TryDequeue(out newpoint);
 
-                        if (newpoint == 1){ // alarm sounded
+                        if (newpoint == 1)
+                        { // alarm sounded
+                            inACycle = true;
                             alarmrang = DateTime.Now;
-                            txtTimeSlep.Text = (EnteredBed - DateTime.Now).ToString("hh\\:mm\\:ss");
-                        }else if (newpoint == 2)
+                            if(leftTheBed>EnteredBed)
+                                txtTimeSlep.Text = (leftTheBed - EnteredBed).ToString("hh\\:mm\\:ss");
+                            else
+                                txtTimeSlep.Text = (alarmrang - EnteredBed).ToString("hh\\:mm\\:ss");
+                        }
+                        else if (newpoint == 2)
                         {// left bed by msp
-                            cycleEnd = DateTime.Now;
-                            txtWakingTime.Text = (cycleEnd - alarmrang).ToString("hh\\:mm\\:ss");
+
+                        }
+                        else if (newpoint == 3) { // full cycle end
+                            inACycle = false;
                         }
 
                         state = 0;

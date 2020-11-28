@@ -29,14 +29,14 @@ volatile char counterForOutCheck = 0;
 #define NOISEPORT P2IN
 #define BEDPORT P1IN
 
-#define SNOOZETIME 18  //in seconds
+#define SNOOZETIME 15  //in seconds
 #define CHECKTIME 30   //in seconds
-#define OUTOFBEDPASS 12 //in check time intervals
+#define OUTOFBEDPASS 4//in check time intervals
 #define TONE1 120
 #define TONE2 50
 
 volatile int tone = TONE1;
-#define BEDLIMIT 8800000
+#define BEDLIMIT 9400000
 volatile unsigned long long int LoadCellVal;
 
 /**
@@ -82,8 +82,12 @@ void checkForSoundState(){
     P1OUT &= ~BIT3; // ending the cycle light
     //TB1CCTL1 &= ~CCIE;      //disable TB ISR
     P4IE &= ~BIT0;          //disable snooze interrupt
+    P1IFG &= ~BIT4; // clear this ISR flag
     P1IE |= BIT4;          //enable noise sensor interrupt
+    P1IFG &= ~BIT4; // clear this ISR flag
+
     state = 7;
+    sendForceToSerial(3);
     //noise ISR will change so something else that would also be an isr probable
     //Clear all variables for next round
 }
@@ -106,7 +110,7 @@ void bedCheck1(void){
     if(LoadCellVal > BEDLIMIT){ // bed high aka occupied
         state =2;
         TB1CTL |= TBCLR;            // clear TB clock
-        //TB1CCTL1 |= CCIE;           // enable TB counter
+        TB1CCTL1 |= CCIE;           // enable TB counter
         waitingTime = SNOOZETIME;   //set the timer to count up to the snooze time
         timercounter =0;
     }else{
@@ -137,6 +141,7 @@ __interrupt void port_4(void){
 //  and if out of bed disable this ISR
 #pragma vector = TIMER1_B1_VECTOR
 __interrupt void TimerB1_snooze(void){
+    timercounter++;
 
     if(state==5){
         switch(tone){
@@ -168,9 +173,8 @@ __interrupt void TimerB1_snooze(void){
             }
         }
     }
-
+    ReadForce();
     sendForceToSerial(0);
-    timercounter++;
     TB1CCTL1 &= ~CCIFG; //Clear TB flag
 }
 
@@ -178,7 +182,7 @@ __interrupt void TimerB1_snooze(void){
 void outOfBedState(void){
     waitingTime = CHECKTIME;  //set the timer to check
     TB1CTL |= TBCLR;            // clear TB clock
-    //TB1CCTL1 |= CCIE;           // enable TB counter
+    TB1CCTL1 |= CCIE;           // enable TB counter
     timercounter = 0;
     state = 6;
     sendForceToSerial(2);
@@ -199,7 +203,7 @@ void bedCheck2(void){
             state =5;
         }else{
             TB1CTL |= TBCLR;            // clear TB clock
-            //TB1CCTL1 |= CCIE;           // enable TB counter
+            TB1CCTL1 |= CCIE;           // enable TB counter
             timercounter = 0;
             state = 6;
         }
