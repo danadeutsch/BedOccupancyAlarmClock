@@ -36,7 +36,7 @@ volatile char counterForOutCheck = 0;
 #define TONE2 50
 
 volatile int tone = TONE1;
-#define BEDLIMIT 9400000
+#define BEDLIMIT 8750000
 volatile unsigned long long int LoadCellVal;
 
 /**
