@@ -197,10 +197,11 @@ namespace ReadHX711
                         { // alarm sounded
                             inACycle = true;
                             alarmrang = DateTime.Now;
-                            if(leftTheBed>EnteredBed)
+                            if(inBed == false)
                                 txtTimeSlep.Text = (leftTheBed - EnteredBed).ToString("hh\\:mm\\:ss");
                             else
                                 txtTimeSlep.Text = (alarmrang - EnteredBed).ToString("hh\\:mm\\:ss");
+                            txtBedTime.Text = EnteredBed.ToString("hh\\:mm\\:ss");
                         }
                         else if (newpoint == 2)
                         {// left bed by msp
@@ -208,6 +209,13 @@ namespace ReadHX711
                         }
                         else if (newpoint == 3) { // full cycle end
                             inACycle = false;
+                                                       
+                            listBox1.Items.Add(txtBedTime.Text);
+                            listBox2.Items.Add(txtTimeSlep.Text);
+                            listBox3.Items.Add(txtWakingTime.Text);
+                            txtBedTime.Text = "";
+                            txtTimeSlep.Text = "";
+                            txtWakingTime.Text = "";
                         }
 
                         state = 0;
