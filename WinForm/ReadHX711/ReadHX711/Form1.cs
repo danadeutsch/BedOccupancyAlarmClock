@@ -19,7 +19,7 @@ namespace ReadHX711
         double time = 0;
         bool connected = false;
         int numberInReadBuffer = 0;
-        int inbedvalue = 9400000;
+        int inbedvalue = 9000000;
         DateTime EnteredBed;
         bool inBed = false;
         TimeSpan Time;
